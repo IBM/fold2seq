@@ -49,7 +49,7 @@ class fold_dataset(Dataset):
 		return len(self.name_list)
 
 	def __getitem__(self, idx):
-		x = np.load("../cath_data/fold_features/"+self.name_list[idx]+".npy")
+		x = np.load("../data/fold_features/"+self.name_list[idx]+".npy")
 		return [torch.tensor(x).float(), self.name_list[idx]]
 
 def inference(model, args, fold):
@@ -95,7 +95,7 @@ def inference(model, args, fold):
 
 def main():
 	parser = argparse.ArgumentParser(description='Arguments for inference.py')
-	parser.add_argument('--data_path', default="../cath_data/domain_dict_full.pkl", type=str)
+	parser.add_argument('--data_path', default="../data/domain_dict_full.pkl", type=str)
 	parser.add_argument('--trained_model', default=None, type=str)
 	parser.add_argument('--batch_size', default=128, type=int)
 	parser.add_argument('--n', default=10, type=int)

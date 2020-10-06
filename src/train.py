@@ -20,7 +20,7 @@ class generator_dataset(Dataset):
 		
 		self.args=args
 		self.domain_data = {}
-		#fold_index= np.loadtxt("../cath_data/fold_index.txt", dtype='str')
+		#fold_index= np.loadtxt("../data/fold_index.txt", dtype='str')
 		self.name_list=[]
 		self.permute=[]
 		for i in domain_data:
@@ -40,7 +40,7 @@ class generator_dataset(Dataset):
 		return len(self.name_list)
 
 	def __getitem__(self, idx):
-		fold_feat = np.load("../cath_data/fold_features/"+self.name_list[idx].replace('/','-')+".npy")
+		fold_feat = np.load("../data/fold_features/"+self.name_list[idx].replace('/','-')+".npy")
 		seq_feat = self.domain_data[self.name_list[idx]]['embed'][:self.args.maxlen+2]
 		classlabel  = self.domain_data[self.name_list[idx]]['fold_index']
 		seq_padding =self.domain_data[self.name_list[idx]]['padding'][:self.args.maxlen+2]
@@ -52,7 +52,7 @@ def var_len_data_pre(domain_data,  batch_size, mode='train'):
 
 
 
-    fold_index = np.loadtxt("../cath_data/fold_index.txt", dtype=str)
+    fold_index = np.loadtxt("../data/fold_index.txt", dtype=str)
 
     keys=[]
     for i in domain_data:
@@ -98,11 +98,11 @@ def dataloader(args, domain_data, sorted_keys, bt, device):
     for i in bt:
         keys = sorted_keys[i]  
         #print (len(domain_data[keys]['seq']))
-        #seq.append(torch.load("../cath_data/seq_features_nopads/"+keys.replace('/','-')+".pt", map_location=device))
+        #seq.append(torch.load("../data/seq_features_nopads/"+keys.replace('/','-')+".pt", map_location=device))
         #if args.encoder == 'fold' or args.encoder == 'both':
         seq_tokens = amino_acid.transformer_integer(domain_data[keys]['seq'])
         seq.append(seq_tokens)
-        fold.append(np.load("../cath_data/fold_features/"+keys.replace('/','-')+".npy"))  
+        fold.append(np.load("../data/fold_features/"+keys.replace('/','-')+".npy"))  
         foldlabel.append(domain_data[keys]['fold_index'])
         decoderlabel.append(seq_tokens[1:])
 
@@ -357,7 +357,7 @@ def main():
     parser.add_argument('--dropout', default=0.1, type=float)
     #parser.add_argument('--seq_embedding', default='ProteinSeqTransformer', type=str)
     parser.add_argument('--nfolds', default=1227, type=int)
-    parser.add_argument('--data_path', default="../cath_data/domain_dict_full.pkl", type=str)
+    parser.add_argument('--data_path', default="../data/domain_dict_full.pkl", type=str)
     parser.add_argument('--maxlen', default=200, type=int)
     parser.add_argument('--batch_size', default=64, type=int)
     parser.add_argument('--epochs', default=200, type=int)
@@ -411,12 +411,13 @@ def main():
        args.batch_size*=torch.cuda.device_count()
 
     trainset = generator_dataset(args, domain_data, mode='train')
+    valset = generator_dataset(args, domain_data, mode='val')
     testset1 = generator_dataset(args, domain_data, mode='test1')
     testset2 = generator_dataset(args, domain_data, mode='test2')
     trainset_loader = DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=8)
     testset1_loader = DataLoader(testset1,  batch_size=args.batch_size, shuffle=False, num_workers=8)
     testset2_loader = DataLoader(testset2,  batch_size=args.batch_size, shuffle=False, num_workers=8)
-
+    val_loader = DataLoader(valset,  batch_size=args.batch_size, shuffle=False, num_workers=8)
 
 
 
@@ -431,27 +432,23 @@ def main():
        Adam_opt = torch.optim.Adam(model.parameters(), lr=1, betas=(0.9, 0.98), eps=1E-09)
        lambdalr = lambda x: args.nhidden**(-0.5)*min((x+0.1)**(-0.5), x*((4000)**-1.5))
        scheduler = torch.optim.lr_scheduler.LambdaLR(Adam_opt, lr_lambda=lambdalr)
-    best_m=eval(model,args, testset1_loader, 0)
+    best_m=eval(model,args, val_loader, 0)
     for e in range(1, args.epochs+1):
 
-        #train_epoch(model,args, Adam_opt, sorted_keys_trainset, batch_ind_trainset, train_idx,domain_data, e)       
-        #metric = eval(model,args, sorted_keys_testset, batch_ind_testset, test_idx, domain_data, e)
-        #eval(model,args, sorted_keys_testset2, batch_ind_testset2, test_idx2, domain_data, e)
         if args.lba4!=0:
            args.lba4=1.0/2**(e-3.)
         train_epoch(model, args, Adam_opt, scheduler  ,trainset_loader,e )
+        m0 = eval(model, args, val_loader, e)
         m1 = eval(model, args, testset1_loader, e)
         m2 = eval(model, args, testset2_loader, e)
 
-        #if m2<2.9 and  m1 <= best_m:
-            #best_m=m1
         torch.save({
                 'epoch': e,
                 'model_state_dict': model.state_dict(),
                 'optimizer_state_dict': Adam_opt.state_dict(),
                 'lrschedule_state_dict': scheduler.state_dict(),
                 'args': args,
-                'metric': [m1, m2]
+                'metric': [m0, m1, m2]
         }, args.model_save+".e"+str(e))
   
 
