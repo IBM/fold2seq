@@ -34,10 +34,11 @@ def greedy_sampling(token_preds):
 class fold_dataset(Dataset):
 	def __init__(self, args):
 
-		with open(args.data_path, "rb") as f:
+		with open(args.seq_path, "rb") as f:
 			domain_dict = pickle.load(f)
 
 		self.name_list=[]
+		self.args=args
 
 		for i in domain_dict:
 			if domain_dict[i]['mode']==args.mode:
@@ -49,7 +50,7 @@ class fold_dataset(Dataset):
 		return len(self.name_list)
 
 	def __getitem__(self, idx):
-		x = np.load("../data/fold_features/"+self.name_list[idx]+".npy")
+		x = np.load(self.args.fold_path+self.name_list[idx]+".npy")
 		return [torch.tensor(x).float(), self.name_list[idx]]
 
 def inference(model, args, fold):
@@ -60,7 +61,7 @@ def inference(model, args, fold):
 		device = 'cuda'
 	else:
 		device = 'cpu'
-	device='cpu'
+	#device='cpu'
 	model.to(device)
 	fold=fold.to(device)
 	#tape_token_encode=[2] # 2 is the starting encode in tape
@@ -95,10 +96,11 @@ def inference(model, args, fold):
 
 def main():
 	parser = argparse.ArgumentParser(description='Arguments for inference.py')
-	parser.add_argument('--data_path', default="../data/domain_dict_full.pkl", type=str)
+	parser.add_argument('--seq_path', default="../cath_data/domain_dict_full.pkl111", type=str)
+	parser.add_argument('--fold_path', default="../cath_data/fold_features/", type=str)
 	parser.add_argument('--trained_model', default=None, type=str)
 	parser.add_argument('--batch_size', default=128, type=int)
-	parser.add_argument('--n', default=10, type=int)
+	parser.add_argument('--n', default=100, type=int)
 	parser.add_argument('--output', default='./gen_seq.txt', type=str)
 	parser.add_argument('--mode', default='test2', type=str)
 	parser.add_argument('--maxlen', default=200, type=int)
@@ -134,7 +136,7 @@ def main():
 	print (trained_dict['args'], trained_dict['epoch'], trained_dict['metric'])
 	
 	model_name = args.trained_model.split('/')[1]
-	args.output = "Result/"+model_name+"."+args.mode+".top"+args.decodetype
+	#args.output = "Result/"+model_name+".mis"+args.mode+".top"+args.decodetype
 	print ("output path: ", args.output)
 
 	model = train.fold_classification_generator(trained_dict['args'])
@@ -148,10 +150,10 @@ def main():
 
 	model.load_state_dict(new_state_dict, strict=False)
 
-	#if torch.cuda.device_count() > 1:
-	#	print("Let's use ",torch.cuda.device_count()," GPUs!")
-	#	model = nn.DataParallel(model)
-	#	args.batch_size*=torch.cuda.device_count()
+	if torch.cuda.device_count() > 1:
+		print("Let's use ",torch.cuda.device_count()," GPUs!")
+		model = nn.DataParallel(model)
+		args.batch_size*=torch.cuda.device_count()
 
 	testset = fold_dataset(args)
 	testset_loader = DataLoader(testset, batch_size=args.batch_size, shuffle=False, num_workers=8)
