@@ -34,15 +34,13 @@ def greedy_sampling(token_preds):
 class fold_dataset(Dataset):
 	def __init__(self, args):
 
-		with open(args.seq_path, "rb") as f:
-			domain_dict = pickle.load(f)
 
 		self.name_list=[]
 		self.args=args
 
-		for i in domain_dict:
-			if domain_dict[i]['mode']==args.mode:
-				for j in range(args.n):
+		i = args.pdb
+
+		for j in range(args.n):
 					self.name_list.append(i.replace('/','-'))
 		print ("mode=", args.mode, " ", len(self.name_list))
 
@@ -96,8 +94,8 @@ def inference(model, args, fold):
 
 def main():
 	parser = argparse.ArgumentParser(description='Arguments for inference.py')
-	parser.add_argument('--seq_path', default="../cath_data/domain_dict_full.pkl111", type=str)
-	parser.add_argument('--fold_path', default="../cath_data/fold_features/", type=str)
+	parser.add_argument('--pdb', default="1ab0A00-1-131", type=str)
+	parser.add_argument('--fold_path', default="../data/fold_features/", type=str)
 	parser.add_argument('--trained_model', default=None, type=str)
 	parser.add_argument('--batch_size', default=128, type=int)
 	parser.add_argument('--n', default=100, type=int)
