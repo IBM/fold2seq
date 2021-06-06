@@ -17,15 +17,11 @@ import train
 import time
 
 def top_k_sampling(token_preds, k=5):
-	# token_preds shape should be [bsz, 21]
-
-	#sorted_ind = np.argsort(-token_preds, dim=-1)
 	token_preds = torch.topk(token_preds, k=k, dim=-1)
 	tokens_dis = torch.distributions.Categorical(token_preds.values)
 	smp = tokens_dis.sample()
 	token_smp = token_preds.indices[torch.arange(0, smp.size(0)) , smp]
 
-	#sampled_ind= np.random.choice(sorted_ind[:k], p=token_preds[sorted_ind[:k]]/np.sum(token_preds[sorted_ind[:k]]))
 	return token_smp
 
 def greedy_sampling(token_preds):
@@ -38,10 +34,13 @@ class fold_dataset(Dataset):
 		self.name_list=[]
 		self.args=args
 
-		i = args.pdb
+		with open(args.data_path, "rb") as f:
+			domain = pickle.load(f)
+		
 
-		for j in range(args.n):
-					self.name_list.append(i.replace('/','-'))
+		for i in domain:
+			for j in range(args.n):
+				self.name_list.append(i.replace('/','-'))
 		print ("mode=", args.mode, " ", len(self.name_list))
 
 	def __len__(self):
@@ -94,7 +93,7 @@ def inference(model, args, fold):
 
 def main():
 	parser = argparse.ArgumentParser(description='Arguments for inference.py')
-	parser.add_argument('--pdb', default="1ab0A00-1-131", type=str)
+	parser.add_argument('--data_path', default="./domain_dict.pkl", type=str)
 	parser.add_argument('--fold_path', default="../data/fold_features/", type=str)
 	parser.add_argument('--trained_model', default=None, type=str)
 	parser.add_argument('--batch_size', default=128, type=int)
@@ -134,7 +133,6 @@ def main():
 	print (trained_dict['args'], trained_dict['epoch'], trained_dict['metric'])
 	
 	model_name = args.trained_model.split('/')[1]
-	#args.output = "Result/"+model_name+".mis"+args.mode+".top"+args.decodetype
 	print ("output path: ", args.output)
 
 	model = train.fold_classification_generator(trained_dict['args'])

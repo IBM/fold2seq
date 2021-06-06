@@ -20,16 +20,14 @@ class generator_dataset(Dataset):
 		
 		self.args=args
 		self.domain_data = {}
-		#fold_index= np.loadtxt("../data/fold_index.txt", dtype='str')
 		self.name_list=[]
 		self.permute=[]
 		for i in domain_data:
-				if domain_data[i]['mode']==mode and len(domain_data[i]['seq'])<=args.maxlen:
-					self.domain_data[i]=domain_data[i]
-					self.name_list.append(i)
-					self.permute.append((0,1,2,3))
+			self.domain_data[i]=domain_data[i]
+			self.name_list.append(i)
+			self.permute.append((0,1,2,3))
 		
-		if mode=='train' and args.augmentation==1:
+		if args.augmentation==1:
 			self.permute=[(0,1,2,3) for i in range(len(self.name_list))] + [(0,2,1,3) for i in range(len(self.name_list))] + [(1,0,2,3) for i in range(len(self.name_list))] \
 			+ [(1,2,0,3) for i in range(len(self.name_list))] + [(2,0,1,3) for i in range(len(self.name_list))] + [(2,1,0,3) for i in range(len(self.name_list))]
 			self.name_list = self.name_list+self.name_list+self.name_list+self.name_list+self.name_list+self.name_list			
@@ -387,20 +385,12 @@ def main():
     args.device = device
     with open("check_device", "w") as f:
         f.write(device)
-    # sorted_keys_trainset, batch_ind_trainset = var_len_data_pre(domain_data, args.batch_size, mode='train')
-    # sorted_keys_testset, batch_ind_testset = var_len_data_pre(domain_data, args.batch_size, mode='test1')
-    # sorted_keys_testset2, batch_ind_testset2 = var_len_data_pre(domain_data, args.batch_size, mode='test2')
-    # train_idx = np.arange(0, len(batch_ind_trainset))
-    # test_idx = np.arange(0, len(batch_ind_testset))
-    # test_idx2 = np.arange(0, len(batch_ind_testset2))
 
     model = fold_classification_generator(args) 
     print ("model params:", model_statistics.net_param_num(model))
     md = model.state_dict()
     for i in md:
         print (i, md[i].shape)
-    # loading pretrained model if possible
-    #print (model.linear.weight[0])
     load_pretrained_model(model, args)
     
     if torch.cuda.device_count() > 1:
@@ -411,19 +401,7 @@ def main():
        args.batch_size*=torch.cuda.device_count()
 
     trainset = generator_dataset(args, domain_data, mode='train')
-    valset = generator_dataset(args, domain_data, mode='val')
-    testset1 = generator_dataset(args, domain_data, mode='test1')
-    testset2 = generator_dataset(args, domain_data, mode='test2')
     trainset_loader = DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=8)
-    testset1_loader = DataLoader(testset1,  batch_size=args.batch_size, shuffle=False, num_workers=8)
-    testset2_loader = DataLoader(testset2,  batch_size=args.batch_size, shuffle=False, num_workers=8)
-    val_loader = DataLoader(valset,  batch_size=args.batch_size, shuffle=False, num_workers=8)
-
-
-
-    #print (model.linear.weight[0])
-
-    #eval(model,args, sorted_keys_testset, batch_ind_testset, test_idx, domain_data, 0)
 
     if args.lr!=-1:
        Adam_opt = torch.optim.Adam(model.parameters(), lr=args.lr)
@@ -438,9 +416,6 @@ def main():
         if args.lba4!=0:
            args.lba4=1.0/2**(e-3.)
         train_epoch(model, args, Adam_opt, scheduler  ,trainset_loader,e )
-        m0 = eval(model, args, val_loader, e)
-        m1 = eval(model, args, testset1_loader, e)
-        m2 = eval(model, args, testset2_loader, e)
 
         torch.save({
                 'epoch': e,
@@ -448,7 +423,6 @@ def main():
                 'optimizer_state_dict': Adam_opt.state_dict(),
                 'lrschedule_state_dict': scheduler.state_dict(),
                 'args': args,
-                'metric': [m0, m1, m2]
         }, args.model_save+".e"+str(e))
   
 
