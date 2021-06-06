@@ -3,7 +3,7 @@
 ![Fold2Seq Architecture](/data/fold2seq2.png)
 
 ## Data
-The CATH IDs of protein domains in training, validation and two test sets are in `pdb_lists/`. 
+The CATH IDs of protein domains in training, validation and two test sets are in [pdb_lists/](pdb_lists/). 
 
 
 ## Feature Generation:
@@ -14,7 +14,7 @@ The CATH IDs of protein domains in training, validation and two test sets are in
   * Column3: The chain ID
   * Column4: The starting residue ID
   * Column5: The ending residue ID
-* An example of this input file is `example/domain_list.txt`.
+* An example of this input file is [example/domain_list.txt](example/domain_list.txt).
 
 ### Secondary Structure Assignment:
 * Moreover, you need to pre-assign a secondary structure element to each residue. We provide an assignment file ([ss.txt](https://drive.google.com/file/d/1B_9JdT43-l0sVOgBJCdCRAN31tOGX8VA/view?usp=sharing)) obtained from RCSB PDB which contains most of exsiting PDBs. You can first check if your protein is in this file. If not, you can append it following the format in the file.  
