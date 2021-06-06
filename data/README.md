@@ -1,5 +1,7 @@
 # Fold2Seq Data and Feature Generation
 
+![Fold2Seq Architecture](/fold2seq2.png)
+
 ## Data
 The CATH IDs of protein domains in training, validation and two test sets are in `pdb_lists/`. 
 
