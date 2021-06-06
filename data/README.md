@@ -22,7 +22,7 @@ The CATH IDs of protein domains in training, validation and two test sets are in
 ### Generating features:
 * To generate SSE density features, you can run:
 
-`python fold_feat_gen.py --domain_list example/domain_list.txt  --ss ss.txt --out $path_to_the_output_file`.
+`python fold_feat_gen.py --domain_list example/domain_list.txt  --ss ss.txt --out $path_to_the_output_dictionary`.
 
 * It will generate a  python dictionary containing input information and fold features in `fold_features/`.
 
