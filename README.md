@@ -18,4 +18,5 @@ go to 'src/'
 
 For example, $pdb_fold_features = ../data/fold_features/1ab0A00-1-131.npy
 
-
+### Fold2Seq generated structures against natural structures:
+![Fold2Seq structures](/fold2seq3.png)
