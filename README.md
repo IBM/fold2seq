@@ -1,5 +1,7 @@
 # Fold2Seq: A Joint Sequence(1D)-Fold(3D) Embedding-based Generative Model for Protein Design
 
+![Fold2Seq Architecture](/fold2seq1.png)
+
 ## Environment file: 
 * `environment.yml`
 
