@@ -6,7 +6,7 @@
 * `environment.yml`
 
 ## Data and Feature Generation:
-* Go to `data/` and check the README there. 
+* Go to [data/](data/) and check the README there. 
 
 ## How to train the model:
 * go to `src/` and run:
