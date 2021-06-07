@@ -3,7 +3,7 @@
 ![Fold2Seq Architecture](/fold2seq1.png)
 
 ## Environment file: 
-* `environment.yml`
+* [environment.yml](environment.yml)
 
 ## Data and Feature Generation:
 * Go to [data/](data/) and check the README there. 
