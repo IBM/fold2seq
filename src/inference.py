@@ -9,7 +9,6 @@ import numpy as np
 import math
 import os
 import pickle
-import numpy as np
 import random
 from Utils import amino_acid
 from Utils import model_statistics
@@ -39,8 +38,9 @@ class fold_dataset(Dataset):
 		
 
 		for i in domain:
-			for j in range(args.n):
-				self.name_list.append(i.replace('/','-'))
+			if domain[i]['mode']==args.mode:
+				for j in range(args.n):
+					self.name_list.append(i.replace('/','-'))
 		print ("mode=", args.mode, " ", len(self.name_list))
 
 	def __len__(self):

@@ -410,7 +410,6 @@ def main():
        Adam_opt = torch.optim.Adam(model.parameters(), lr=1, betas=(0.9, 0.98), eps=1E-09)
        lambdalr = lambda x: args.nhidden**(-0.5)*min((x+0.1)**(-0.5), x*((4000)**-1.5))
        scheduler = torch.optim.lr_scheduler.LambdaLR(Adam_opt, lr_lambda=lambdalr)
-    best_m=eval(model,args, val_loader, 0)
     for e in range(1, args.epochs+1):
 
         if args.lba4!=0:
