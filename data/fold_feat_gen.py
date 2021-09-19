@@ -79,14 +79,13 @@ def selection(pdb_path, chain, start, end, ss):
         raise ValueError("encounter inconsistent pdb structure:"+pdb_path+chain+" "+start+','+end)
 
 
-    #print(seqs)
     start,end = dp(seqs, ss['seq'])
 
     j=start
     for i in range(len(ca_coor)):
         while ss['seq'][j]!=threetoone[ca_coor[i]['name']]:
             j+=1
-        ca_coor[i]['ss'] = ss['ss']
+        ca_coor[i]['ss'] = ss['ss'][j]
 
     return ca_coor, ss['seq'][start:end]
 
@@ -122,7 +121,6 @@ def dp(cst, cseq):
         print(cseq)
         raise ValueError("do not find alignment.")
 
-    print(best_score - len(cst))
 
     return best_start, best_end
 
@@ -149,19 +147,19 @@ if __name__=='__main__':
 
         if label in seq_ss:
             
-            x1,x2 = selection(line[0] ,  line[2], int(line[3]), int(line[4]), seq_ss)  
+            x1,x2 = selection(line[0] ,  line[2], (line[3]), (line[4]), seq_ss[label])  
 
             domain_seq[i]={}
             domain_seq[i]['seq'] =x2
             domain_seq[i]['3d'] = x1
 
 
-        print ("processed seqs: %d/%d" %(num, len(seq_dict)))
+        print ("processed seqs: %d" %(num))
         num+=1
     keys=[]
-    for i in domain_dict:
+    for i in domain_seq:
         keys.append(i)
-    ss_dense_gen.featurization(domain_dict, keys)
+    ss_dense_gen.featurization(domain_seq, keys)
     with open(args.out, "wb") as f:
         pickle.dump(domain_seq, f)
 

@@ -38,7 +38,6 @@ class fold_dataset(Dataset):
 		
 
 		for i in domain:
-			if domain[i]['mode']==args.mode:
 				for j in range(args.n):
 					self.name_list.append(i.replace('/','-'))
 		print ("mode=", args.mode, " ", len(self.name_list))
@@ -166,7 +165,6 @@ def main():
 					if t[i][j]==0:
 						break
 					s+=amino_acid.my_seqlabel[t[i][j]]
-				print (s)
 				f.write(fold[1][i]+" "+s+"\n")
 
 
