@@ -100,6 +100,7 @@ def feat_gen(domain_dict):
 
 def featurization(domain_dict, keys):
 
+	domain_dict = feat_gen(domain_dict)
 	print ('start generating features......')
 	box_size = 40.
 	voxel_size= 2.

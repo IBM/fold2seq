@@ -82,10 +82,14 @@ def selection(pdb_path, chain, start, end, ss):
     start,end = dp(seqs, ss['seq'])
 
     j=start
+
+    print (start, end)
+
     for i in range(len(ca_coor)):
         while ss['seq'][j]!=threetoone[ca_coor[i]['name']]:
             j+=1
         ca_coor[i]['ss'] = ss['ss'][j]
+        j+=1
 
     return ca_coor, ss['seq'][start:end]
 
@@ -159,8 +163,8 @@ if __name__=='__main__':
     keys=[]
     for i in domain_seq:
         keys.append(i)
-    ss_dense_gen.featurization(domain_seq, keys)
     with open(args.out, "wb") as f:
         pickle.dump(domain_seq, f)
 
+    ss_dense_gen.featurization(domain_seq, keys)
 
